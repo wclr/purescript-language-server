@@ -16,6 +16,7 @@ import Effect.Aff (Aff, Fiber)
 import Effect.Timer (TimeoutId)
 import Foreign (Foreign)
 import IdePurescript.Modules (State) as Modules
+import IdePurescript.PscIdeServer (Port)
 import LanguageServer.Protocol.TextDocument (TextDocument)
 import LanguageServer.Protocol.Types (ClientCapabilities, Connection, Diagnostic, DocumentStore, DocumentUri, Settings)
 import PscIde.Command (RebuildError)
@@ -36,7 +37,7 @@ data RebuildRunning
   | DiagnosticsRebuild (Map DocumentUri TextDocument)
 
 type ServerStateRec =
-  { port :: Maybe Int
+  { port :: Maybe Port
   , root :: Maybe String
   , conn :: Maybe Connection
   , clientCapabilities :: Maybe ClientCapabilities
@@ -52,8 +53,12 @@ type ServerStateRec =
   --
   , savedCacheDb :: Maybe CacheDb
   , revertCacheDbTimeout :: Maybe TimeoutId
-  --
+
+  -- `modules` store "currently active in the editor" module state (imports and
+  -- used identifiers). It is updated on any handled event related to to active
+  -- document in the editor.
   , modules :: Modules.State
+
   , modulesFile :: Maybe DocumentUri
   , diagnostics :: DiagnosticState
   , parsedModules ::
